@@ -1,0 +1,12 @@
+---
+title: "Courses"
+
+about:
+  template: broadside
+---
+
+About this site
+
+```{r}
+
+```

@@ -3,16 +3,36 @@ project:
   output-dir: docs
 
 website:
-  title: "Temp"
+  title: "Belle Schmidt"
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
+      - text: "Maps"
+        menu: 
+          - file: us_states.qmd 
+          - file: wisconsin_districts.qmd
+
+sidebar: 
+  - id: maps.qmd
+    title: "Maps"
+    style: "docked"
+    background: light
+    collapse-level: 2
+    contents:
+      - US_States.qmd
+
+page-footer:
+    left: |
+      &copy; Belle Schmidt, 2024<br>
+      All content licensed under <i class='bi-badge-cc'></i>
+      [(CC BY-NC-SA 4.0)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+    right: |
+      Site built with <a href='https://quarto.org/'>Quarto</a>
 
 format:
   html:
-    theme: cosmo
+    theme: morph
     css: styles.css
     toc: true
 

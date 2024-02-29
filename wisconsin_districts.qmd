@@ -1,0 +1,151 @@
+---
+title: "Wisconsin Districts"
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+
+library(tidyverse)
+library(mdsr)      # package associated with our MDSR book
+library(sf)
+library(fec16)
+library(ggspatial)
+library(prettymapr)
+library(ggplot2)
+
+
+
+```
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+district_elections <- results_house |>
+  mutate(district = parse_number(district_id)) |>
+  group_by(state, district) |>
+  summarize(
+    N = n(), 
+    total_votes = sum(general_votes, na.rm = TRUE),
+    d_votes = sum(ifelse(party == "DEM", general_votes, 0), na.rm = TRUE),
+    r_votes = sum(ifelse(party == "REP", general_votes, 0), na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    other_votes = total_votes - d_votes - r_votes,
+    r_prop = r_votes / total_votes,  
+    winner = ifelse(r_votes > d_votes, "Republican", "Democrat")
+  )
+wi_results <- district_elections |>
+  filter(state == "WI")
+wi_results |>                  
+  select(-state)
+```
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+# distribution of total number of votes is narrow by design
+wi_results |>
+  skim(total_votes) |>
+  select(-na)
+
+# compare total Dem and Rep votes across WI in 2012
+wi_results |>
+  summarize(
+    N = n(), 
+    state_votes = sum(total_votes), 
+    state_d = sum(d_votes), 
+    state_r = sum(r_votes)
+  ) |>
+  mutate(
+    d_prop = state_d / state_votes, 
+    r_prop = state_r / state_votes
+  )
+
+# Proportion of Rep votes by district
+wi_results |>
+  select(district, r_prop, winner) |>
+  arrange(desc(r_prop))
+```
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+#| message: false
+#| warning: false
+
+# Download congressional district shapefiles for the 113th Congress from a UCLA website (don't sweat the details too much)
+src <- "http://cdmaps.polisci.ucla.edu/shp/districts113.zip"
+lcl_zip <- fs::path(tempdir(), "districts113.zip")
+download.file(src, destfile = lcl_zip)
+lcl_districts <- fs::path(tempdir(), "districts113")
+unzip(lcl_zip, exdir = lcl_districts)
+dsn_districts <- fs::path(lcl_districts, "districtShapes")
+
+# You can also downloaded zip file and uploaded it into R, but this uses a ton of space!
+# dsn_districts <- fs::path("Data/districtShapes")
+
+# read shapefiles into R as an sf object
+st_layers(dsn_districts)
+
+# be able to read as a data frame as well
+districts <- st_read(dsn_districts, layer = "districts113") |>
+  mutate(DISTRICT = parse_number(as.character(DISTRICT)))
+head(districts, width = Inf)
+class(districts)
+```
+
+
+```{r,echo = FALSE, message = FALSE, warning = FALSE}
+# create basic plot with WI congressional districts
+wi_shp <- districts |>
+  filter(STATENAME == "Wisconsin")
+wi_shp |>
+  st_geometry() |>
+  plot(col = gray.colors(nrow(wi_shp)))
+```
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+# Append election results to geospatial data
+wi_merged <- wi_shp |>
+  st_transform(4326) |>
+  inner_join(wi_results, by = c("DISTRICT" = "district"))
+head(wi_merged, width = Inf)
+```
+
+```{r,echo = FALSE, message = FALSE, warning = FALSE}
+# Color based on winning party
+#   Note that geom_sf is part of ggplot2 package, while st_geometry is
+#   part of sf package
+wi <- ggplot(data = wi_merged, aes(fill = winner)) +
+  annotation_map_tile(zoom = 6, type = "osm", progress = "none") + 
+  geom_sf(alpha = 0.5) +
+  scale_fill_manual("Winner", values = c("blue", "red")) + 
+  geom_sf_label(aes(label = DISTRICT), fill = "white") + 
+  theme_void()
+wi
+
+# Color based on proportion Rep.  Be sure to let limits so centered at 0.5.
+# This is a choropleth map, where meaningful shading relates to some attribute
+wi +
+  aes(fill = r_prop) + 
+  scale_fill_distiller(
+    "Proportion\nRepublican", 
+    palette = "RdBu", 
+    limits = c(0.2, 0.8)
+  )
+
+```
+
+### Gerrymandering in Wisconsin 
+Despite Wisconsin being considered a swing state, gerrymandering has made it so that the Republican Party has had a majority in the state from district elections. One way this is evident is when looking at the size of the districts. When looking at the map of Wisconsin, you can see that the districts that are clearly won by the democrats are both large while the districts in the Southeast part of Wisconsin that were won by Republicans are much smaller. The map also shows district 7 being a very unique shape. It can be inferred based on the results of district 3 that this was most likely intentional. Reasons why this might benefit the Republicans is because then the votes wouldn't be going to waste in district 3 (if they assume that is for sure Democratic) and/or those votes might be necessary for them to just take the majority in district 7. 
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+# A leaflet map can allow us to zoom in and see where major cities fit, etc.
+library(leaflet)
+pal <- colorNumeric(palette = "RdBu", domain = c(0, 1))
+
+leaflet_wi <- leaflet(wi_merged) |>
+  addTiles() |>
+  addPolygons(
+    weight = 1, fillOpacity = 0.7, 
+    color = ~pal(1 - r_prop),   # so red association with Reps
+    popup = ~paste("District", DISTRICT, "</br>", round(r_prop, 4))
+  ) |>                          # popups show prop Republican
+  setView(lng = -80, lat = 35, zoom = 7)
+leaflet_wi
+```
+

@@ -1,0 +1,8 @@
+---
+title: "Mini Project 1"
+description: "Assignment from Data Science 2 to figure out Quarto"
+about:
+  template: solana
+ 
+---
+

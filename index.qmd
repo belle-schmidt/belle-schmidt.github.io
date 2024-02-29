@@ -1,11 +1,34 @@
 ---
-title: "Temp"
+title: ""
+about: 
+  id: intro-heading
+  template: trestles
+  image: images1/Belle_Schmidt.jpg
+  image-shape: rounded
+  image-width: 400px
+  links:
+    - icon: envelope
+      href: mailto:schmid46@stolaf.edu
+    - icon: github
+      href: https://github.com/belle-schmidt
 ---
 
-This is a Quarto website.
+::: {#intro-heading}
+## Belle Schmidt
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+Belle Schmidt is doing her undergraduate degree at St Olaf College. On campus she plays varsity softball, is a co-president of Sports Analytics Club, and works as an admissions tour guide. After college her hopes are to work as a sports analyst for a professional sports team, preferably baseball.
 
-```{r}
-1 + 1
-```
+### Education
+
+BA in Math with Statistics/Data Science and Management concentrations <br> 2026 \| St. Olaf College
+
+High School Diploma <br> 2022 \| Eastlake High School
+:::
+
+### Get in Touch
+
+**Email**: <a href='mailto:schmid46@stolaf.edu'>schmid46\@stolaf.edu</a>
+
+**Address**: 1500 St. Olaf Ave, Northfield, MN 55057
+
+**Phone**: 425-748-4784

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Belle Schmidt - Meet Belle Schmidt</title>
+<title>Belle Schmidt - Wisconsin Districts</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -33,6 +33,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
@@ -58,12 +59,21 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<link href="site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
+<script src="site_libs/leaflet-1.3.1/leaflet.js"></script>
+<link href="site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
+<script src="site_libs/proj4-2.6.2/proj4.min.js"></script>
+<script src="site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+<link href="site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
+<script src="site_libs/leaflet-binding-2.2.1/leaflet.js"></script>
 
 
 <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -84,10 +94,21 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link" href="./index.html" rel="" target="">
  <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link active" href="./about.html" rel="" target="" aria-current="page">
- <span class="menu-text">Meet Belle Schmidt</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-maps" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Maps</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-maps">    
+        <li>
+    <a class="dropdown-item" href="./us_states.html" rel="" target="">
+ <span class="dropdown-text">US States</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./wisconsin_districts.html" rel="" target="">
+ <span class="dropdown-text">Wisconsin Districts</span></a>
+  </li>  
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools ms-auto">
 </div>
@@ -99,25 +120,56 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#gerrymandering-in-wisconsin" id="toc-gerrymandering-in-wisconsin" class="nav-link active" data-scroll-target="#gerrymandering-in-wisconsin">Gerrymandering in Wisconsin</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<div class="quarto-about-broadside column-page">
-  <div class="about-main">
-    <div class="about-entity" style="background-image: url('C:\Users\isabe\Downloads\IMG_6635.jpg')"></div>
-    <div class="about-contents"><header id="title-block-header" class="quarto-title-block default">
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Meet Belle Schmidt</h1>
+<h1 class="title">Wisconsin Districts</h1>
 </div>
+
+
+
 <div class="quarto-title-meta">
-  </div>
-</header><main class="content" id="quarto-document-content">
-<p>About this site</p>
 
-
-</main></div>
+    
+  
+    
   </div>
+  
+
+</header>
+
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="wisconsin_districts_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
 </div>
- <!-- /main -->
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="wisconsin_districts_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="wisconsin_districts_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="gerrymandering-in-wisconsin" class="level3">
+<h3 class="anchored" data-anchor-id="gerrymandering-in-wisconsin">Gerrymandering in Wisconsin</h3>
+<p>Despite Wisconsin being considered a swing state, gerrymandering has made it so that the Republican Party has had a majority in the state from district elections. One way this is evident is when looking at the size of the districts. When looking at the map of Wisconsin, you can see that the districts that are clearly won by the democrats are both large while the districts in the Southeast part of Wisconsin that were won by Republicans are much smaller. The map also shows district 7 being a very unique shape. It can be inferred based on the results of district 3 that this was most likely intentional. Reasons why this might benefit the Republicans is because then the votes wouldn’t be going to waste in district 3 (if they assume that is for sure Democratic) and/or those votes might be necessary for them to just take the majority in district 7.</p>
+
+
+</section>
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -138,6 +190,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
   const isCodeAnnotation = (el) => {
     for (const clz of el.classList) {
       if (clz.startsWith('code-annotation-')) {                     

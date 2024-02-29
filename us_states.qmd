@@ -1,0 +1,45 @@
+---
+title: "US States"
+---
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+
+library(tidyverse)
+library(mdsr) 
+library(maps)
+```
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+#| message: false
+#| warning: false
+
+us_crime <- read_csv("~/belle-schmidt.github.io/US_violent_crime.csv")
+
+us_crime <- us_crime |>
+  mutate(State = str_to_lower(...1))
+
+
+us_states <- map_data("state")
+
+
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+us_crime |>
+  right_join(us_states, by = c("State" = "region")) |>
+  rename(region = State) |>
+  ggplot(mapping = aes(x = long, y = lat,
+                          group = group)) + 
+  geom_polygon(aes(fill = UrbanPop ), color = "light grey") +
+  labs(
+    title = "Urban Population For Each State",
+    fill = "Urban Population Percentage",
+    x = "Longitude",
+    y = "Latitude"
+  )
+  
+```
+
+## Urban Population Analysis
+
+From looking at this map we can see that states that have a higher urban population tend to be close to one another while the states with the lowest urban populations also seem to neighbor one another. This is especially apparent when looking at California, a state with one of the highest (if not the highest) urban populations. Pretty much all of the states in the near vicinity have a higher urban population including Arizona, Nevada, Oregon, Utah, and Colorado. It is also interesting that the two most urban regions seem to be in the Northeast and the Southwest. On the otherhand, in both the Midwest and the Southeast are some of the states with the lowest urban populations. Both these regions also the highest number of low urban population states in a given region.

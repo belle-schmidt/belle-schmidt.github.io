@@ -1,0 +1,73 @@
+---
+title: "US States"
+---
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(mdsr) 
+library(maps)
+```
+
+```{r}
+#| message: false
+#| warning: false
+
+us_crime <- read_csv("~/belle-schmidt.github.io/US_violent_crime.csv")
+
+us_crime <- us_crime |>
+  mutate(State = str_to_lower(...1))
+
+
+us_states <- map_data("state")
+
+
+```
+
+```{r}
+us_crime |>
+  right_join(us_states, by = c("State" = "region")) |>
+  rename(region = State) |>
+  ggplot(mapping = aes(x = long, y = lat,
+                          group = group)) + 
+  geom_polygon(aes(fill = UrbanPop ), color = "light grey") +
+  labs(
+    title = "Urban Population For Each State",
+    fill = "Urban Population Percentage",
+    x = "Longitude",
+    y = "Latitude"
+  )
+  
+```
+
+```{r}
+us_crime |>
+  right_join(us_states, by = c("State" = "region")) |>
+  rename(region = State) |>
+  ggplot(mapping = aes(x = long, y = lat,
+                          group = group)) + 
+  geom_polygon(aes(fill = Murder ), color = "light grey") +
+  labs(
+    title = "Murder Arrests (per 100,000 people) For Each State",
+    fill = "Murder Arrests (per 100,000 people)",
+    x = "Longitude",
+    y = "Latitude"
+  )
+```
+
+```{r}
+us_crime |>
+  right_join(us_states, by = c("State" = "region")) |>
+  rename(region = State) |>
+  ggplot(mapping = aes(x = long, y = lat,
+                          group = group)) + 
+  geom_polygon(aes(fill = Rape ), color = "light grey") +
+  labs(
+    title = "Rape Arrests (per 100,000 people) For Each State",
+    fill = "Rape Arrests (per 100,000 people)",
+    x = "Longitude",
+    y = "Latitude"
+  )
+```
