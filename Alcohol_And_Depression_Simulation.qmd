@@ -1,0 +1,105 @@
+---
+title: "Mini Project 2: Simulation"
+---
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(readr)
+library(dbplyr)
+```
+
+```{r}
+SleepStudy <- read_csv("SleepStudy.csv")
+```
+
+
+## Simulating behavior under a null hypothesis: Are Students That Abstain From Drinking More Likely to Have Moderate Depression Than Moderate Drinkers? 
+```{r}
+SleepStudy2 <- SleepStudy |>
+  select(AlcoholUse, DepressionStatus) |>
+  filter(AlcoholUse %in% c("Abstain", "Moderate")) 
+
+
+SleepStudy2
+
+SleepStudy2 |>
+  count()
+
+SleepStudy2
+
+print(SleepStudy2, n = Inf)
+
+sample(SleepStudy2$AlcoholUse)
+
+```
+
+```{r}
+prop_success <- function(data, condition, x_var, total_n){
+  data |>
+    filter({{ condition }}) |>
+    group_by({{ x_var }}) |>
+    summarize(count = n(),
+              prop = count / total_n )
+}
+
+result <- prop_success(SleepStudy2, DepressionStatus == "moderate", AlcoholUse, 154)
+
+```
+
+
+```{r}
+
+observed_diff <- result[[3]][1] - result[[3]][2]
+
+observed_diff
+```
+
+```{r}
+diff_vector <- vector("double", 1000)  # 1. output
+for (i in 1:1000) {
+  prop_success <- SleepStudy2 |>
+    mutate(AlcoholUse = sample(AlcoholUse)) |>
+    filter(DepressionStatus == "moderate") |>
+    group_by(AlcoholUse) |>
+    summarize(count = n(),
+            prop = count/154)
+  
+   diff_vector[i] <- prop_success[[3]][1] - prop_success[[3]][2]
+   
+    while (is.na(diff_vector[i])) {
+    prop_success <- SleepStudy2 |>
+    mutate(AlcoholUse = sample(AlcoholUse)) |>
+    filter(DepressionStatus == "moderate") |>
+    group_by(AlcoholUse) |>
+    summarize(count = n(),
+            prop = count/154)
+  diff_vector[i] <- prop_success[[3]][1] - prop_success[[3]][2]
+  }
+}
+
+diff_vector
+```
+
+
+```{r}
+null_world <- tibble(diff_vector = diff_vector)
+ggplot(null_world, aes(x = diff_vector)) +
+  geom_histogram() +
+  geom_vline(xintercept = observed_diff, color = "red") +
+  labs(title = "Observed Differences In Depression Status For Students Who Abstain From Alcohol vs Moderately Drink",
+       x = "Difference in Proportion of Students With Moderate Depression Based on Drinking Level") +
+  theme(plot.title = element_text(size = 9))
+
+p_value <- sum(diff_vector >= observed_diff) / 1000
+
+p_value
+```
+
+
+##Plot Analysis
+Each x value on my plot represents the observed difference in the proportion of students with moderate depression when they abstain from drinking instead of drinking moderately for a random sample of students. The height of the columns depends on how many times each observation occurred out of the 1000 random samples taken. The red line was used to show the observed difference in the proportion of students with moderate depression when they abstained from drinking instead of drinking moderately from the SleepStudy Dataset sample. Looking at the graph you can see that the observed difference from the SleepStudy Dataset was -0.05, meaning almost non-existent (although a slight tendency for the proportion of moderate drinkers that are moderately depressed to be higher than the proportion of students who abstinent from drinking). From the 1000 random samples, it seems that this is almost always the case. Often however, even a slightly larger difference is seen. The p-value is 0.254 which tells us that assuming that the null hypothesis is true, which is that there is no significant difference in depression status based on if you drink moderately or abstain from drinking, the likelihood of observing as big of a difference in the proportion of moderate drinkers who are moderately depressed and people who abstain from drinking and are moderately depressed is 0.254. This is relatively low but not low enough for me to be able to reject the null hypothesis. 
+
+between drinking habits and depression status

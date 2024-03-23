@@ -12,7 +12,9 @@ website:
         menu: 
           - file: us_states.qmd 
           - file: wisconsin_districts.qmd
-
+      - text: "Mini Project 2"
+        menu:
+          - file: Alcohol_And_Depression_Simulation.qmd
 sidebar: 
   - id: maps.qmd
     title: "Maps"
