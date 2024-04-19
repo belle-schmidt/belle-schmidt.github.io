@@ -1,0 +1,323 @@
+---
+title: "Mini Project 3"
+format: html
+editor: visual
+---
+
+## Data:
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(ggridges)
+library(knitr)
+library(kableExtra)
+
+spotify <- read_csv("https://proback.github.io/264_fall_2024/Data/spotify.csv") |>
+  select(-playlist_name, -playlist_id, -subgenre) |>
+  unique() |>
+  mutate(genre = str_to_title(genre)) 
+
+View(spotify)
+
+
+
+```
+
+## Songs That Are Edited Versions:
+
+```{r}
+mix_songs <- spotify |>
+  filter(str_detect(title, "[Mm]ix|[Ee]dit\\b") | str_detect(album_name, "[Mm]ix|[Ee]dit\\b")) |>
+  mutate(album_release_year = str_extract(album_release_date, "\\d{4}")) |>
+  select(title, album_name, album_release_year, danceability, popularity, genre) |>
+  arrange(-danceability) 
+
+colnames(mix_songs)[colnames(mix_songs) == "album_name"] <- "Album Name"
+
+colnames(mix_songs)[colnames(mix_songs) == "title"] <- "Title"
+
+colnames(mix_songs)[colnames(mix_songs) == "genre"] <- "Genre"
+
+colnames(mix_songs)[colnames(mix_songs) == "album_release_year"] <- "Album Release Year"
+
+colnames(mix_songs)[colnames(mix_songs) == "danceability"] <- "Danceability"
+
+colnames(mix_songs)[colnames(mix_songs) == "popularity"] <- "Popularity"
+
+
+
+
+kable(mix_songs) |>
+  kable_styling(full_width = FALSE) |>
+  add_header_above(c(" " = 1, " " = 1, " " = 1, " " = 1, " " = 1, " " = 1))
+```
+
+```{r, echo = FALSE}
+colnames(mix_songs)[colnames(mix_songs) == "Album Name"] <- "album_name"
+
+colnames(mix_songs)[colnames(mix_songs) == "Title"] <- "title"
+
+colnames(mix_songs)[colnames(mix_songs) == "Genre"] <- "genre"
+
+colnames(mix_songs)[colnames(mix_songs) == "Album Release Year"] <- "album_release_year"
+
+colnames(mix_songs)[colnames(mix_songs) == "Danceability"] <- "danceability"
+```
+
+## Table With Number Edited Songs Per Genre:
+
+```{r}
+genres_included <- mix_songs |>
+  count(genre) |>
+  rename(Genre = genre)
+  
+
+colnames(genres_included)[colnames(genres_included) == "n"] <- "Number of Songs"
+
+kable(genres_included) |>
+  kable_styling(full_width = FALSE) |>
+  add_header_above(c(" " = 1, " " = 1))
+```
+
+## Table With Average Danceability For Each Genre:
+
+```{r}
+ave_danceability_genre <- spotify |>
+  group_by(genre) |>
+  summarise(Average_Danceability = (round(mean(danceability), 1)),
+            Median_Danceability = (round(median(danceability), 1))) |>
+  arrange(-Average_Danceability) 
+
+colnames(ave_danceability_genre)[colnames(ave_danceability_genre) == "Average_Danceability"] <- "Average Danceability"
+
+colnames(ave_danceability_genre)[colnames(ave_danceability_genre) == "genre"] <- "Genre"
+
+colnames(ave_danceability_genre)[colnames(ave_danceability_genre) == "Median_Danceability"] <- "Median Danceability"
+
+kable(ave_danceability_genre) |>
+  kable_styling(full_width = FALSE) |>
+  add_header_above(c(" " = 1, " " = 1, " " = 1))
+```
+
+```{r, echo = FALSE}
+colnames(ave_danceability_genre)[colnames(ave_danceability_genre) == "Average Danceability"] <- "average_danceability"
+
+colnames(ave_danceability_genre)[colnames(ave_danceability_genre) == "Genre"] <- "genre"
+```
+
+## Distribution of Danceability For Each Genre:
+
+```{r}
+mean_danceability_genre <- spotify |>
+  group_by(genre) |>
+  summarise(mean_danceability = mean(danceability))
+
+
+ggplot(spotify, aes(x = danceability, y = fct_reorder(genre, -danceability), fill = fct_reorder(genre, -danceability))) +
+  geom_density_ridges(aes(height = after_stat(density)), stat = "density")  +
+  labs(title = "Distribution of Danceability For Each Genre",
+       fill = "Genre",
+      x = "Danceability", 
+       y = "Genre") +
+  guides(fill = guide_legend(reverse = TRUE))   
+```
+
+## Conclusion About Correlation Between Genre, Danceability, and Edited Songs:
+
+It was interesting to see that none of the edited songs were in the genre rap, which is the genre with the highest danceability. This could be because songs in that genre are already high in danceability so there is no need to edit it or because it is hard to edit songs into rap songs. If songs are typically edited to be the same genre that they were before, we could also guess that rap songs are harder to remix. Once we forget about Rap, the genre with the highest average and median danceability, we can see that the number of songs that were mixed or edited for each genre, corresponds to the average danceability of the genre. The higher the mean danceability of a genre is, below a certain threshold, the more songs in that genre get remixed or edited. This trend is seen when looking at the “Table With Number of Edited Songs Per Genre” and “Table With Average Danceability For Each Genre”. Behind Rap, the two genres with the next highest danceability are Edm and Latin. Followed by Pop. Then R&B. And lastly, Rock. The order remains the exact same when looking at the number of songs that were remixes or edits in each genre.
+
+Out of all the genres, the Edm edited songs also were the most popular out of the edited songs included in the spotify dataset. This explains why a high proportion of the that were edited in the dataset are Edm. It also can cause predictions such as, people enjoy edits more if they are made to be Edm (which stands fo Electronic Dance Music) or that it is easier to create high quality edits that are Edm.
+
+## Proportion of Songs In Each Genre (Compare Edited vs Non-Edited Songs):
+
+```{r}
+#| message: false
+
+spotify_data <- spotify |>
+  mutate(lower_title = str_to_lower(title),
+         lower_album = str_to_lower(album_name),
+         remix = if_else(str_detect(lower_title, "remix|edit\\b") | str_detect(lower_album, "remix|edit\\b"),
+                         "Edited", "Not Edited"))
+
+total_edited_songs <- spotify_data |>
+  filter(remix == "Edited") |>
+  summarise(total = n())
+
+
+edited_proportions <- spotify_data |>
+  filter(remix == "Edited") |>
+  group_by(genre) |>
+  summarise(edited_proportion = n() / total_edited_songs$total)
+
+total_not_edited_songs <- spotify_data |>
+  filter(remix == "Not Edited") |>
+  summarise(total = n())
+
+
+not_edited_proportions <- spotify_data |>
+  filter(remix == "Not Edited") |>
+  group_by(genre) |>
+  summarise(not_edited_proportion = n() / total_not_edited_songs$total)
+
+prop_table <- not_edited_proportions |>
+  left_join(edited_proportions)
+
+colnames(prop_table)[colnames(prop_table) == "not_edited_proportion"] <- "Proportion of Non-Edited Songs In That Genre"
+
+colnames(prop_table)[colnames(prop_table) == "genre"] <- "Genre"
+
+colnames(prop_table)[colnames(prop_table) == "edited_proportion"] <- "Proportion of Edited Songs In That Genre"
+
+kable(prop_table) |>
+  kable_styling(full_width = FALSE) |>
+  add_header_above(c(" " = 1, " " = 1, " " = 1))
+```
+
+Looking at this table we can see that the proportion of edited songs in each genre does not correspond to the proportion of unedited songs in each genre. Since the proportions are not similar, I can predict that artists are not randomly picking songs or what genres to mix into but instead that they are more inclined to mix songs to be certain genres (EDM and Latin) while purposely staying clear of other genres (Rap). Further analysis would need to be done to see if artists tend to mix songs to be the same genre as they originally were or change it. However, if it is the case that they mix them to remain in the same genre, that they are also more inclined to pick songs from specific genres, specifically EDM and Latin, which saw the most extreme difference.
+
+## Average Danceability of Edited vs. Non-Edited Songs:
+
+```{r}
+spotify_data_2 <- spotify_data |>
+  group_by(remix) |>
+  summarise(average_danceability = mean(danceability)) 
+
+
+  ggplot(data = spotify_data_2, aes(x = remix, y = average_danceability)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "Edit or Non-Edit", 
+       y = "Average Danceability",
+       title = "Average Danceability of Edited vs Non-Edited Songs")
+```
+
+## Distribution of Danceability For Songs That Are Edited vs. Not Edited:
+
+```{r}
+ggplot(spotify_data, aes(x = danceability, y = remix, fill = remix)) +
+  geom_violin() +
+  stat_summary(fun = median, geom="point", size=2, color="red") +
+  labs(title = "Distribution of Danceability Edited vs. Non-Edited Songs",
+       x = "Danceability",
+       y = "Edited or Not Edited",
+       fill = "Edited?",
+       subtitle = "Note: red dot represents median danceability for each group")
+
+```
+
+## Conclusions Made Based On Graphs
+
+The first graph, "Average Danceability of Edited vs. Non-Edited Songs", allows us to see that the mean danceability of edited songs is higher than the mean danceability of non-edited songs. There is also a red point in the "Distribution of Danceability Edited vs. Non-Edited Songs" Graph that represents the median of both groups. Once again the median danceability of the edited songs is higher than the median danceability of the non-edited songs. This tells us that, in general, songs that are edited tend to have a decently high danceability score.
+
+## Average Danceability of Mixes vs Non-Mixes In Each Genre:
+
+```{r}
+#| message: false
+#| warning: false
+
+mix_genre <- spotify_data |>
+  filter(genre %in% c("Edm", "Latin", "Pop", "R&B")) |>
+  group_by(remix, genre) |> 
+  summarise(median_danceability = round(median(danceability),2))
+
+
+ggplot(mix_genre, aes(x = genre, y = median_danceability, fill = remix)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Genre", y = "Median Danceability", fill = "Edit") +
+  ggtitle("Median Danceability by Genre and Edit Status") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Since the original songs are not included in the data set we unfortunately can not conclude if the danceability of a song is normally increased in the edited version or not. We can however, make predictions when we compare the median danceability of the edited songs versus not edited songs in each genre. The biggest difference is seen between the non edited and edited edm songs. There is a much lower median danceability score for edited edm songs than non-edited. My guess is this is the case because the edited EDM songs were edited for the radio so they got rid of or shortened the excessively long instrumental parts. With that in mind, I believe that edited songs used for dances or parties would have an increased danceability score compared to its unedited counterpart.
+
+## Edited Songs That End With Mix Or Edit In Title:
+
+```{r}
+last_word_mix_songs <- mix_songs |>
+  filter(str_detect(title, "[Mm]ix$|[Ee]dit\\b$") | str_detect(album_name, "[Mm]ix$|[Ee]dit\\b$"))
+
+
+
+colnames(last_word_mix_songs)[colnames(last_word_mix_songs) == "album_name"] <- "Album Name"
+
+colnames(last_word_mix_songs)[colnames(last_word_mix_songs) == "title"] <- "Title"
+
+colnames(last_word_mix_songs)[colnames(last_word_mix_songs) == "genre"] <- "Genre"
+
+colnames(last_word_mix_songs)[colnames(last_word_mix_songs) == "album_release_year"] <- "Album Release Year"
+
+colnames(mix_songs)[colnames(mix_songs) == "danceability"] <- "Danceability"
+
+colnames(last_word_mix_songs)[colnames(last_word_mix_songs) == "popularity"] <- "Popularity"
+
+kable(last_word_mix_songs) |>
+  kable_styling(full_width = FALSE) |>
+  add_header_above(c(" " = 1, " " = 1, " " = 1, " " = 1, " " = 1, " " = 1))
+```
+
+This table tells us that the last word in the title, of almost every edited song, is the word that indicates it is an edited song, like edit, mix, or remix. This made me curious to learn if the most common last word of titles would be the word that indicated a song was an edit for genres with a higher number of edited songs. Using this reasoning, I predicted that the most common last word of edm song titles would be remix since that genre had the most edited songs. Below you can see that I was correct.
+
+## Code Finding Last Word Of Every Song Title:
+
+```{r}
+#| message: false
+#| warning: false
+
+
+last_word_data <- spotify |>
+  mutate(last_word = str_extract(title, "\\b\\w+\\b(?=\\W*$|$)", )) 
+```
+
+## Most Common Last Word Of Song Titles In EDM Genre:
+
+```{r}
+last_word_data_2 <- last_word_data |>
+  filter(genre == "Edm") |>
+  select(title, last_word) |>
+  count(last_word) |>
+  arrange(-n) |>
+  slice_max(n) 
+
+colnames(last_word_data_2)[colnames(last_word_data_2) == "n"] <- "Number of Song Titles That End With The Word" 
+
+colnames(last_word_data_2)[colnames(last_word_data_2) == "last_word"] <- "Most Common Last Word For EDM Songs"
+
+kable(last_word_data_2) |>
+  kable_styling(full_width = FALSE) |>
+  add_header_above(c(" " = 1, " " = 1))
+```
+
+Once I confirmed my prediction that the most common last word of EDM song titles is "Remix", I wanted to see if there was any other genre that also would have "Remix" or "Edit" as the most common last word of song titles.
+
+## Most Common Last Word Of Song Titles In Every Genre:
+
+```{r}
+#| message: false
+#| warning: false
+
+last_word_genre <- last_word_data |>
+  group_by(genre, last_word) |>
+  summarize(n = n())
+
+updated_last_word_genre <- last_word_genre|>
+  group_by(genre) |>
+  slice_max(n)
+
+colnames(updated_last_word_genre)[colnames(updated_last_word_genre) == "n"] <- "Number of Song Titles In Given Genre That End With The Word" 
+
+colnames(updated_last_word_genre)[colnames(updated_last_word_genre) == "last_word"] <- "Most Common Last Word For Each Genre"
+
+colnames(updated_last_word_genre)[colnames(updated_last_word_genre) == "genre"] <- "Genre"
+
+kable(updated_last_word_genre) |>
+  kable_styling(full_width = FALSE) |>
+  add_header_above(c(" " = 1, " " = 1, " " = 1))
+```
+
+This table shows us that the second most popular genre for edited songs, Latin, also had Remix as the most common last word of song titles. This would support my prediction that genres with more edited songs are going to have "Remix" or "Edit" as the most common word. However, I think finding more data for Latin songs would allow us to make a stronger conclusion since the most commonly used last word in Latin song titles is the least commonly used out of all genres' most commonly used words.
